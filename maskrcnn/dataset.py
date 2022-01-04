@@ -12,17 +12,18 @@ from coco_utils import ConvertCocoPolysToMask
 
 
 class HookDataset(torch.utils.data.Dataset):
-    def __init__(self, root, transforms):
+    def __init__(self, root, transforms, phas):
         self.root = root
         self.transforms = transforms
+        self.phas = phas
         # load all image files, sorting them to
         # ensure that they are aligned
-        self.imgs = list(sorted(os.listdir(os.path.join(root, 'img/train'))))
+        self.imgs = list(sorted(os.listdir(os.path.join(root, 'img', self.phas))))
         # self.masks = list(sorted(os.listdir(os.path.join(root, "PedMasks"))))
 
     def __getitem__(self, idx):
         # load images and masks
-        img_path = os.path.join(self.root, "img/train", self.imgs[idx])
+        img_path = os.path.join(self.root, "img", self.phas, self.imgs[idx])
         # mask_path = os.path.join(self.root, "PedMasks", self.masks[idx])
         img = Image.open(img_path).convert("RGB")
         # note that we haven't converted the mask to RGB,

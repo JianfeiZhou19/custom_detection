@@ -1,12 +1,13 @@
 import torchvision
 import torch
+from torchvision.models import mobilenet
 from torchvision.models.detection import MaskRCNN
 from torchvision.models.detection.rpn import AnchorGenerator
 from torchvision.models.detection.faster_rcnn import FastRCNNPredictor
 from torchvision.models.detection.mask_rcnn import MaskRCNNPredictor
 from engine import train_one_epoch, evaluate
 
-from dataset import PennFudanDataset
+from dataset import HookDataset
 import transforms as T
 import utils
 
@@ -48,13 +49,13 @@ def main():
     # our dataset has two classes only - background and person
     num_classes = 2
     # use our dataset and defined transformations
-    dataset = PennFudanDataset('PennFudanPed', get_transform(train=True))
-    dataset_test = PennFudanDataset('PennFudanPed', get_transform(train=False))
+    dataset = HookDataset(r'D:\BaiduNetdiskDownload\MaskDatas', get_transform(train=True), 'train')
+    dataset_test = HookDataset(r'D:\BaiduNetdiskDownload\MaskDatas', get_transform(train=False), 'valid')
 
     # split the dataset in train and test set
-    indices = torch.randperm(len(dataset)).tolist()
-    dataset = torch.utils.data.Subset(dataset, indices[:-50])
-    dataset_test = torch.utils.data.Subset(dataset_test, indices[-50:])
+    # indices = torch.randperm(len(dataset)).tolist()
+    # dataset = torch.utils.data.Subset(dataset, indices[:-50])
+    # dataset_test = torch.utils.data.Subset(dataset_test, indices[-50:])
 
     # define training and validation data loaders
     data_loader = torch.utils.data.DataLoader(
@@ -97,9 +98,9 @@ def main():
         lr_scheduler.step()
         # evaluate on the test dataset
         evaluate(model, data_loader_test, device=device)
-
+    torch.save(model.state_dict(), 'mobile.pth')
     print("That's it!")
 
 
-
-
+if __name__ == '__main__':
+    main()

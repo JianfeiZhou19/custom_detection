@@ -73,7 +73,7 @@ def main():
                                                 output_size=7,
                                                 sampling_ratio=2)
     # get the model using our helper function
-    model = get_model_instance_segmentation(2, backbone, anchor_generator, roi_pooler)
+    model = get_model_instance_segmentation(num_classes, backbone, anchor_generator, roi_pooler)
 
     # move model to the right device
     model.to(device)

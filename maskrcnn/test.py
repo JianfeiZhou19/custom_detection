@@ -3,23 +3,41 @@ import os
 import torch
 import torchvision
 from PIL import Image
+import numpy as np
 from glob import glob
+import matplotlib.pyplot as plt
 from torchvision.models.detection.rpn import AnchorGenerator
 
-
 from train import get_model_instance_segmentation
+import transforms as T
 
 @torch.no_grad()
 def test(model, dataset):
     start = time.time()
     for data_file in dataset:
-        img = Image.open(data_file).convert('RGB')
-        out = model(img)
+        start = time.time()
+        img_input = Image.open(data_file).convert('RGB')
+        img, _ = T.ToTensor()(img_input, None)
+        out = model([img.cuda()])
+        labels = out[0]['labels'].data.cpu().numpy()
+        mask_out = out[0]['masks'].data.cpu().numpy()
+        w, h = img_input.size
+        mask = np.zeros((h, w), dtype=np.int8)
+        for idx, label in enumerate(labels):
+            mask[mask_out[idx, 0] > 0.1] = label
+        img = np.asarray(img_input)
+        plt.subplot(121)
+        plt.imshow(img)
+        plt.subplot(122)
+        plt.imshow(mask)
+        print(time.time()-start)
+        plt.show()
+        
     print('average time:', (time.time()-start)/len(dataset))
         
 if __name__ == '__main__':
     device = torch.device('cuda') if torch.cuda.is_available() else torch.device('cpu')
-    num_classes = 2
+    num_classes = 3
     backbone = torchvision.models.mobilenet_v2(pretrained=True).features
     backbone.out_channels = 1280
     anchor_generator = AnchorGenerator(sizes=((32, 64, 128, 256, 512),),
@@ -29,8 +47,9 @@ if __name__ == '__main__':
                                                 sampling_ratio=2)
     # get the model using our helper function
     model = get_model_instance_segmentation(num_classes, backbone, anchor_generator, roi_pooler)
-    model.load_state_dict(torch.load('model.pth'))
+    model.load_state_dict(torch.load('mobile.pth'))
     # move model to the right device
     model.to(device)
-    dataset = glob(os.path.join('', '*.jpg'))
+    model.eval()
+    dataset = glob(os.path.join('D:/BaiduNetdiskDownload/MaskDatas/img/test', '*.jpg'))
     test(model, dataset)

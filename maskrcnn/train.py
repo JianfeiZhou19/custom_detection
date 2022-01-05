@@ -47,7 +47,7 @@ def main():
     device = torch.device('cuda') if torch.cuda.is_available() else torch.device('cpu')
 
     # our dataset has two classes only - background and person
-    num_classes = 2
+    num_classes = 3
     # use our dataset and defined transformations
     dataset = HookDataset(r'D:\BaiduNetdiskDownload\MaskDatas', get_transform(train=True), 'train')
     dataset_test = HookDataset(r'D:\BaiduNetdiskDownload\MaskDatas', get_transform(train=False), 'valid')
@@ -98,7 +98,7 @@ def main():
         lr_scheduler.step()
         # evaluate on the test dataset
         evaluate(model, data_loader_test, device=device)
-    torch.save(model.state_dict(), 'mobile.pth')
+    torch.save(model.state_dict(), 'mobile_v3_samll.pth')
     print("That's it!")
 
 
